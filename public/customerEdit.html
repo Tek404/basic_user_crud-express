@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Customer Information</title>
+</head>
+<body>
+
+    <h2>Edit Customer Information</h2>
+
+    <form action="/updateCustomer/:id" method="patch" id="editForm">
+        <table>
+            <tr>
+                <th><label for="ID">ID:</label></th>
+                <td><input type="text" id="ID" name="ID" readonly></td>
+            </tr>
+            <tr>
+                <th><label for="editName">Name:</label></th>
+                <td><input type="text" id="editName" name="editName" readonly></td>
+            </tr>
+            <tr>
+                <th><label for="editIcNumber">IC Number:</label></th>
+                <td><input type="text" id="editIcNumber" name="editIcNumber" required></td>
+            </tr>
+            <tr>
+                <th><label for="editDob">Date of Birth:</label></th>
+                <td><input type="date" id="editDob" name="editDob"></td>
+            </tr>
+            <tr>
+                <th><label for="editAddress">Address:</label></th>
+                <td><textarea id="editAddress" name="editAddress" rows="4" required></textarea></td>
+            </tr>
+            <tr>
+                <th><label for="editAddressCountry">Address Country:</label></th>
+                <td><input type="text" id="editAddressCountry" name="editAddressCountry" required></td>
+            </tr>
+            <tr>
+                <th><label for="editAddressPostcode">Address Postcode:</label></th>
+                <td><input type="text" id="editAddressPostcode" name="editAddressPostcode" readonly></td>
+            </tr>
+        </table>
+        <br>
+        <input type="submit" value="Update">
+        <button onclick="navigateToCustomerList()">Back to Customer List</button>
+
+    </form>
+    <script>
+        // prefill data
+        document.getElementById('ID').value = '<%= customerData.user_id %>';
+        document.getElementById('editName').value = '<%= customerData.name %>';
+        document.getElementById('editIcNumber').value = '<%= customerData.ic_number %>';
+        document.getElementById('editDob').value = '<%= customerData.dob %>';
+        document.getElementById('editAddress').value = '<%= customerData.address %>';
+        document.getElementById('editAddressCountry').value = '<%= customerData.address_country %>';
+        document.getElementById('editAddressPostcode').value = '<%= customerData.address_postcode %>';
+        
+        document.getElementById('editForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const formData = {
+            editName: document.getElementById('editName').value,
+            editIcNumber: document.getElementById('editIcNumber').value,
+            editDob: document.getElementById('editDob').value,
+            editAddress: document.getElementById('editAddress').value,
+            editAddressCountry: document.getElementById('editAddressCountry').value,
+            editAddressPostcode: document.getElementById('editAddressPostcode').value,
+            };
+
+
+            // get the customer ID from the form
+            const customerId = document.getElementById('ID').value;
+
+            // send post request to update data
+            fetch(`/updateCustomer/${customerId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.href = '/customerList';
+                } else {
+                    alert('Error updating customer data. Please try again.');
+                }
+            })
+            .catch(error => console.error('Error updating customer data:', error));
+    });
+    function navigateToCustomerList() {
+        window.location.href = '/customerList.html';
+    }
+    </script>
+</body>
+
+</html>

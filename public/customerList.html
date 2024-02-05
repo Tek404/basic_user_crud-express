@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer List</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            cursor: pointer; 
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr.selected {
+            background-color: #a6c7e2; 
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Customer List</h2>
+
+    <label for="searchInput">Search by Name:</label>
+    <input type="text" id="searchInput" placeholder="Enter name to search">
+    <button onclick="navigateToAddPage()">Add Customer</button>
+
+    <table id="customerTable">
+        <thead>
+            <tr>
+                <th>User ID</th>
+                <th>Name</th>
+                <th>IC Number</th>
+                <th>Date of Birth</th>
+                <th>Address</th>
+                <th>Country</th>
+                <th>Postcode</th>
+            </tr>
+        </thead>
+        <tbody id="customerList"></tbody>
+    </table>
+
+    <script>
+        function fetchCustomers() {
+            fetch('/getCustomers')
+                .then(response => response.json())
+                .then(data => displayCustomers(data))
+                .catch(error => displayError('Error fetching customer list:', error));
+        }
+
+        function navigateToAddPage() {
+            window.location.replace('/customerAdd');
+        }
+
+        function displayCustomers(data) {
+            const customerList = document.getElementById('customerList');
+            customerList.innerHTML = '';
+
+            data.forEach(customer => {
+                const row = customerList.insertRow();
+                row.innerHTML = `
+                    <td>${customer.user_id}</td>
+                    <td>${customer.name}</td>
+                    <td>${customer.ic_number}</td>
+                    <td>${customer.dob}</td>
+                    <td>${customer.address}</td>
+                    <td>${customer.address_country}</td>
+                    <td>${customer.address_postcode}</td>
+                `;
+
+                // highlight row and redirect to edit page
+                row.addEventListener('click', () => {
+                    toggleRowSelection(row);
+                    navigateToEditPage(customer.user_id); 
+                });
+            });
+        }
+
+        function toggleRowSelection(row) {
+            row.classList.toggle('selected');
+        }
+
+        function navigateToEditPage(customerId) {
+            window.location.href = `/customerEdit/${customerId}`;
+        }
+
+        // search by name or ic
+        function searchCustomers() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+
+            // ic number check
+            const isICNumber = /^\d+$/.test(searchInput);
+
+            let searchParam;
+            if (isICNumber) {
+                searchParam = 'icNumber';
+            } else {
+                searchParam = 'name';
+            }
+            if (searchInput === ''){
+                fetchCustomers()
+            }else{
+            fetch(`/searchCustomers?${searchParam}=${encodeURIComponent(searchInput)}`)
+                .then(response => response.json())
+                .then(data => displayCustomers(data))
+                .catch(error => displayError('Error searching customers:', error));
+                
+            }
+        }
+
+        function displayError(message, error) {
+            console.error(message, error);
+        }
+
+        // event listener for search input
+        document.getElementById('searchInput').addEventListener('input', searchCustomers);
+        fetchCustomers();
+    </script>
+
+</body>
+</html>

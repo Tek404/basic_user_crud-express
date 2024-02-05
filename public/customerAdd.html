@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Information Form</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>User Information Form</h2>
+
+    <form id="userForm">
+        <table>
+            <tr>
+                <th><label for="name">Name:</label></th>
+                <td><input type="text" id="name" name="name" maxlength="100" required></td>
+            </tr>
+            <tr>
+                <th><label for="icNumber">IC Number:</label></th>
+                <td><input type="text" id="icNumber" name="icNumber" pattern="\d*" maxlength="14" required></td>
+            </tr>
+            <tr>
+                <th><label for="dob">Date of Birth:</label></th>
+                <td><input type="date" id="dob" name="dob" required></td>
+            </tr>
+            <tr>
+                <th><label for="address">Address:</label></th>
+                <td><textarea id="address" name="address" rows="4" maxlength="100" required></textarea></td>
+            </tr>
+            <tr>
+                <th><label for="addressCountry">Address Country:</label></th>
+                <td>
+                    <select id="addressCountry" name="addressCountry" required>
+                        <option value="Malaysia">Malaysia</option>
+                        <option value="Singapore">Singapore</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th><label for="addressPostcode">Address Postcode:</label></th>
+                <td><input type="text" id="addressPostcode" name="addressPostcode" pattern="\d*" maxlength="20" required></td>
+            </tr>
+        </table>
+    
+        <br>
+        <input type="submit" value="Submit">
+        <button onclick="navigateToCustomerList()">Back to Customer List</button>
+
+    </form>
+
+    <script>
+        document.getElementById('userForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+    
+            const formData = new FormData(event.target);
+    
+            // validate dob
+            const dob = new Date(formData.get('dob'));
+            const currentDate = new Date();
+            const minAgeDate = new Date(currentDate.getFullYear() - 18, currentDate.getMonth(), currentDate.getDate());
+    
+            if (dob > minAgeDate) {
+                alert('You must be at least 18 years old to register.');
+                return;
+            }
+    
+            // post form data to server
+            fetch('/submitForm', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(Object.fromEntries(formData)),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.href = '/customerList';
+                } else {
+                    alert('Error submitting form. Please try again.');
+                }
+            })
+            .catch(error => console.error('Error submitting form:', error));
+        });
+    function navigateToCustomerList() {
+        window.location.href = '/customerList.html';
+    }
+    </script>
+</body>
+</html>
